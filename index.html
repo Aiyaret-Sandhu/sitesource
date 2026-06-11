@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Netsight Automated Loop Testbed</title>
+    <style>
+        :root {
+            --matrix-green: #00ff66;
+            --dark-bg: #0a0a0c;
+            --panel-bg: rgba(16, 16, 20, 0.85);
+            --border-glow: rgba(0, 255, 102, 0.2);
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background Canvas for the Green DNA Pattern */
+        #dnaCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.15;
+        }
+
+        header {
+            background: var(--panel-bg);
+            border: 1px solid var(--matrix-green);
+            box-shadow: 0 0 15px var(--border-glow);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--matrix-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.6);
+        }
+
+        #clock-panel {
+            font-family: monospace;
+            font-size: 18px;
+            color: var(--matrix-green);
+            text-align: right;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 20px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            color: var(--matrix-green);
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .log-terminal {
+            background: #000;
+            border: 1px solid #222;
+            flex-grow: 1;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            overflow-y: auto;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            border-left: 3px solid var(--matrix-green);
+            padding-left: 8px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .log-timestamp {
+            color: #888;
+        }
+
+        .log-url {
+            color: #00ffcc;
+            word-break: break-all;
+        }
+
+        /* Hidden Stage container where the actual elements are loaded for Netsight */
+        #netsight-capture-stage {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 1px;
+            height: 1px;
+            opacity: 0.01;
+            overflow: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="dnaCanvas"></canvas>
+
+    <header>
+        <div>
+            <h1>Netsight SITESOURCE Mutation Array</h1>
+            <small style="color: #666;">Loop Status: ACTIVE | Target Filter: electricman-2-hs.swf</small>
+        </div>
+        <div id="clock-panel">
+            <div id="live-date">---</div>
+            <div id="live-time" style="font-weight: bold; font-size: 22px;">00:00:00</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="panel">
+            <div class="panel-header">⚡ Runtime DOM Injection Log (Every 5s)</div>
+            <div id="injection-terminal" class="log-terminal"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">📋 Target URL Stack Registry</div>
+            <div id="registry-terminal" class="log-terminal" style="color: #aaa;"></div>
+        </div>
+    </div>
+
+    <div id="netsight-capture-stage"></div>
+
+    <script>
+        // Comprehensive list of domain, path, query, and fragment configurations
+        const targetUrlPool = [
+            "http://static4.kizi.com/system/static/games/electricman-2-hs.swf?1335957831.",
+            "http://media.fastclick.net/w/get.media?electricman-2-hs.swf",
+            "https://secure.miniclip.com/games/electricman/flash/electricman-2-hs.swf",
+            "http://cdn.assets.games2win.com/content/flash/games/action/electricman-2-hs.swf",
+            "https://images.addictinggames.com/games/core/electricman-2-hs.swf?track_session=XYZ999",
+            "http://10.129.34.18/storage/legacy_assets/electricman-2-hs.swf",
+            "https://content.armorgames.com/files/games/electricman-2-hs.swf#stage_3_verification",
+            "http://static.mochigames.com/games/electricman-2-hs.swf?id=60296558074&version=9.9.0.7090",
+            "https://gamedata.crazygames.com/electricman-2-hs.swf?v=" + Date.now(),
+            "http://localhost:8080/assets/mirrors/electricman-2-hs.swf",
+            "http://swf.friv.com/games/legacy/electricman-2-hs.swf?player=flash_sim",
+            "https://archive.org/download/flash_electricman2/electricman-2-hs.swf"
+        ];
+
+        const injectionTerminal = document.getElementById('injection-terminal');
+        const registryTerminal = document.getElementById('registry-terminal');
+        const captureStage = document.getElementById('netsight-capture-stage');
+        let poolIndex = 0;
+
+        // Initialize and display the URL Stack registry on load
+        function populateRegistry() {
+            targetUrlPool.forEach((url, idx) => {
+                const item = document.createElement('div');
+                item.style.marginBottom = '6px';
+                item.innerHTML = `<span style="color:var(--matrix-green);">[${idx+1}]</span> ${url}`;
+                registryTerminal.appendChild(item);
+            });
+        }
+
+        // Keep the clock perfectly in sync with system time
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-date').innerText = now.toDateString();
+            document.getElementById('live-time').innerText = now.toTimeString().split(' ')[0];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Sequential DOM Injection Machine
+        function triggerNetsightMutation() {
+            // Loop back to index 0 if the stack completes
+            if (poolIndex >= targetUrlPool.length) {
+                poolIndex = 0;
+                injectionTerminal.innerHTML += `<div style="color:#ffcc00; margin:10px 0;">--- Target Loop Recycling ---</div>`;
+            }
+
+            const activeUrl = targetUrlPool[poolIndex];
+            const timestamp = new Date().toLocaleTimeString();
+
+            // 1. Build and append the embed target structure to trigger Netsight
+            const embedElement = document.createElement('embed');
+            embedElement.setAttribute('src', activeUrl);
+            embedElement.setAttribute('type', 'application/x-shockwave-flash');
+            embedElement.setAttribute('width', '1');
+            embedElement.setAttribute('height', '1');
+            
+            captureStage.appendChild(embedElement);
+
+            // 2. Output to the display monitor panel
+            const logNode = document.createElement('div');
+            logNode.className = 'log-entry';
+            logNode.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span> 
+                Injected Element <span style="color:var(--matrix-green);">#${poolIndex + 1}</span><br>
+                <span class="log-url">${activeUrl}</span>
+            `;
+            injectionTerminal.appendChild(logNode);
+            injectionTerminal.scrollTop = injectionTerminal.scrollHeight;
+
+            poolIndex++;
+        }
+
+        // --- HTML5 Canvas Green DNA Animation Helix ---
+        const canvas = document.getElementById('dnaCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let animTime = 0;
+        function animateDNA() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const numNodes = 25;
+            const startX = canvas.width * 0.15; // Set down the left third of screen
+            const centerY = canvas.height / 2;
+            const waveLength = 400;
+            const amplitude = 70;
+
+            for (let i = 0; i < numNodes; i++) {
+                const x = startX + (i * (canvas.width * 0.7 / numNodes));
+                // Strand A calculations
+                const yA = centerY + Math.sin(animTime + (x / waveLength)) * amplitude;
+                // Strand B calculation (180 degrees out of phase)
+                const yB = centerY + Math.sin(animTime + (x / waveLength) + Math.PI) * amplitude;
+
+                ctx.fillStyle = '#00ff66';
+                ctx.strokeStyle = 'rgba(0, 255, 102, 0.25)';
+                ctx.lineWidth = 1.5;
+
+                // Draw connectivity lines (base pairs)
+                if (i % 2 === 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, yA);
+                    ctx.lineTo(x, yB);
+                    ctx.stroke();
+                }
+
+                // Node bead Strand A
+                ctx.beginPath();
+                ctx.arc(x, yA, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Node bead Strand B
+                ctx.beginPath();
+                ctx.arc(x, yB, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            animTime += 0.015;
+            requestAnimationFrame(animateDNA);
+        }
+
+        // Bootstrap everything
+        populateRegistry();
+        animateDNA();
+        // Fire initialization loop instantly, then step every 5 seconds
+        triggerNetsightMutation();
+        setInterval(triggerNetsightMutation, 5000);
+    </script>
+</body>
+</html>
