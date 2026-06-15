@@ -138,7 +138,7 @@
     <header>
         <div>
             <h1>Netsight SITESOURCE Mutation Array</h1>
-            <small style="color: #666;">Loop Status: ACTIVE | Target Filter: electricman-2-hs.swf</small>
+            <small style="color: #666;">Loop Status: SINGLE EXECUTION | Target Filter: electricman-2-hs.swf</small>
         </div>
         <div id="clock-panel">
             <div id="live-date">---</div>
@@ -148,7 +148,7 @@
 
     <div class="main-container">
         <div class="panel">
-            <div class="panel-header">⚡ Runtime DOM Injection Log (Every 5s)</div>
+            <div class="panel-header">⚡ Runtime DOM Injection Log (Single Run)</div>
             <div id="injection-terminal" class="log-terminal"></div>
         </div>
 
@@ -161,7 +161,7 @@
     <div id="netsight-capture-stage"></div>
 
     <script>
-        // Single retained public mirror URL
+        // Target asset config
         const targetUrlPool = [
             "https://archive.org/download/flash_electricman2/electricman-2-hs.swf"
         ];
@@ -169,7 +169,6 @@
         const injectionTerminal = document.getElementById('injection-terminal');
         const registryTerminal = document.getElementById('registry-terminal');
         const captureStage = document.getElementById('netsight-capture-stage');
-        let poolIndex = 0;
 
         // Initialize and display the URL Stack registry on load
         function populateRegistry() {
@@ -190,18 +189,12 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Sequential DOM Injection Machine
+        // Single DOM Injection Process
         function triggerNetsightMutation() {
-            // Loop back to index 0 if the stack completes
-            if (poolIndex >= targetUrlPool.length) {
-                poolIndex = 0;
-                injectionTerminal.innerHTML += `<div style="color:#ffcc00; margin:10px 0;">--- Target Loop Recycling ---</div>`;
-            }
-
-            const activeUrl = targetUrlPool[poolIndex];
+            const activeUrl = targetUrlPool[0];
             const timestamp = new Date().toLocaleTimeString();
 
-            // 1. Build and append the embed target structure to trigger Netsight
+            // 1. Build and append the embed target structure once
             const embedElement = document.createElement('embed');
             embedElement.setAttribute('src', activeUrl);
             embedElement.setAttribute('type', 'application/x-shockwave-flash');
@@ -215,13 +208,19 @@
             logNode.className = 'log-entry';
             logNode.innerHTML = `
                 <span class="log-timestamp">[${timestamp}]</span> 
-                Injected Element <span style="color:var(--matrix-green);">#${poolIndex + 1}</span><br>
+                Injected Element <span style="color:var(--matrix-green);">#1</span><br>
                 <span class="log-url">${activeUrl}</span>
             `;
             injectionTerminal.appendChild(logNode);
+            
+            // Log final run termination status
+            const endNode = document.createElement('div');
+            endNode.style.color = '#ffcc00';
+            endNode.style.marginTop = '10px';
+            endNode.innerText = '--- Injection Completed (Loop Disabled) ---';
+            injectionTerminal.appendChild(endNode);
+            
             injectionTerminal.scrollTop = injectionTerminal.scrollHeight;
-
-            poolIndex++;
         }
 
         // --- HTML5 Canvas Green DNA Animation Helix ---
@@ -274,11 +273,12 @@
             requestAnimationFrame(animateDNA);
         }
 
-        // Bootstrap everything
+        // Bootstrap execution
         populateRegistry();
         animateDNA();
+        
+        // Execute exactly once immediately on load
         triggerNetsightMutation();
-        setInterval(triggerNetsightMutation, 5000);
     </script>
 </body>
 </html>
