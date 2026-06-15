@@ -161,19 +161,8 @@
     <div id="netsight-capture-stage"></div>
 
     <script>
-        // Comprehensive list of domain, path, query, and fragment configurations
+        // Single retained public mirror URL
         const targetUrlPool = [
-            "http://static4.kizi.com/system/static/games/electricman-2-hs.swf?1335957831.",
-            "http://media.fastclick.net/w/get.media?electricman-2-hs.swf",
-            "https://secure.miniclip.com/games/electricman/flash/electricman-2-hs.swf",
-            "http://cdn.assets.games2win.com/content/flash/games/action/electricman-2-hs.swf",
-            "https://images.addictinggames.com/games/core/electricman-2-hs.swf?track_session=XYZ999",
-            "http://10.129.34.18/storage/legacy_assets/electricman-2-hs.swf",
-            "https://content.armorgames.com/files/games/electricman-2-hs.swf#stage_3_verification",
-            "http://static.mochigames.com/games/electricman-2-hs.swf?id=60296558074&version=9.9.0.7090",
-            "https://gamedata.crazygames.com/electricman-2-hs.swf?v=" + Date.now(),
-            "http://localhost:8080/assets/mirrors/electricman-2-hs.swf",
-            "http://swf.friv.com/games/legacy/electricman-2-hs.swf?player=flash_sim",
             "https://archive.org/download/flash_electricman2/electricman-2-hs.swf"
         ];
 
@@ -251,23 +240,20 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const numNodes = 25;
-            const startX = canvas.width * 0.15; // Set down the left third of screen
+            const startX = canvas.width * 0.15; 
             const centerY = canvas.height / 2;
             const waveLength = 400;
             const amplitude = 70;
 
             for (let i = 0; i < numNodes; i++) {
                 const x = startX + (i * (canvas.width * 0.7 / numNodes));
-                // Strand A calculations
                 const yA = centerY + Math.sin(animTime + (x / waveLength)) * amplitude;
-                // Strand B calculation (180 degrees out of phase)
                 const yB = centerY + Math.sin(animTime + (x / waveLength) + Math.PI) * amplitude;
 
                 ctx.fillStyle = '#00ff66';
                 ctx.strokeStyle = 'rgba(0, 255, 102, 0.25)';
                 ctx.lineWidth = 1.5;
 
-                // Draw connectivity lines (base pairs)
                 if (i % 2 === 0) {
                     ctx.beginPath();
                     ctx.moveTo(x, yA);
@@ -275,12 +261,10 @@
                     ctx.stroke();
                 }
 
-                // Node bead Strand A
                 ctx.beginPath();
                 ctx.arc(x, yA, 4, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Node bead Strand B
                 ctx.beginPath();
                 ctx.arc(x, yB, 4, 0, Math.PI * 2);
                 ctx.fill();
@@ -293,7 +277,6 @@
         // Bootstrap everything
         populateRegistry();
         animateDNA();
-        // Fire initialization loop instantly, then step every 5 seconds
         triggerNetsightMutation();
         setInterval(triggerNetsightMutation, 5000);
     </script>
