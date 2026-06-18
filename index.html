@@ -2,26 +2,31 @@
 <html>
 <head>
     <title>Perfect Origin Sync Matrix</title>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 <body style="background:#0a0a0c; color:#00ff66; font-family:monospace; padding:30px;">
 
     <h2>⚡ Netsight Origin Lock: Absolute Clean Engine</h2>
-    <p>Status: Injecting fully resolved URL...</p>
+    <p>Status: Running Flash Emulator via Ruffle...</p>
 
-    <div id="capture-stage"></div>
+    <div id="flash-container" style="width: 800px; height: 600px; margin: 0 auto;"></div>
 
     <script>
-        // Dynamically build the exact absolute URL to eliminate the "./" or missing slash issues
-        const targetUrl = window.location.origin + "/sitesource/electricman-2-hs.swf";
-        
-        const embed = document.createElement('embed');
-        embed.setAttribute('src', targetUrl);
-        embed.setAttribute('type', 'application/x-shockwave-flash');
-        embed.setAttribute('width', '1');
-        embed.setAttribute('height', '1');
-        
-        document.getElementById('capture-stage').appendChild(embed);
-        console.log("Injected clean target:", targetUrl);
+        window.addEventListener("DOMContentLoaded", (event) => {
+            // 3. Initialize Ruffle
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            
+            // 4. Target the container and append the emulator player
+            const container = document.getElementById("flash-container");
+            container.appendChild(player);
+            
+            // 5. Load the exact absolute URL of your SWF file
+            const targetUrl = window.location.origin + "/sitesource/electricman-2-hs.swf";
+            player.load(targetUrl);
+            
+            console.log("Ruffle emulator injected for target:", targetUrl);
+        });
     </script>
 
 </body>
